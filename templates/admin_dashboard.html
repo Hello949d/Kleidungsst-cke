@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Admin Dashboard</h1>
+
+<div class="row">
+    <!-- Linke Spalte: Verwaltung -->
+    <div class="col-lg-5">
+        <!-- Kategorien verwalten -->
+        <div class="card mb-4">
+            <div class="card-header"><h3>Kategorien verwalten</h3></div>
+            <div class="card-body">
+                <form action="{{ url_for('add_category') }}" method="POST">
+                    <div class="input-group mb-3">
+                        <input type="text" name="name" class="form-control" placeholder="Name der neuen Kategorie" required>
+                        <button class="btn btn-success" type="submit">Hinzufügen</button>
+                    </div>
+                </form>
+                <h5>Bestehende Kategorien:</h5>
+                <ul>
+                    {% for cat in categories %}
+                        <li>{{ cat.name }}</li>
+                    {% else %}
+                        <li>Keine Kategorien vorhanden.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Produkte hinzufügen -->
+        <div class="card mb-4">
+            <div class="card-header"><h3>Produkte hinzufügen</h3></div>
+            <div class="card-body">
+                <!-- Manuell hinzufügen -->
+                <h6>Manuell</h6>
+                <form action="{{ url_for('add_product') }}" method="POST" class="mb-4">
+                    <div class="mb-2">
+                        <input type="text" name="name" class="form-control" placeholder="Artikelname" required>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" name="groesse" class="form-control" placeholder="Größe" required>
+                    </div>
+                    <div class="mb-2">
+                        <select name="category_id" class="form-select" required>
+                            <option value="">Kategorie auswählen...</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Produkt speichern</button>
+                </form>
+                <hr>
+                <!-- Per Excel importieren -->
+                <h6>Per Excel-Datei</h6>
+                <form action="{{ url_for('import_excel') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-2">
+                        <label class="form-label">Datei (Spalte A: Name, B: Größe)</label>
+                        <input type="file" name="excel_file" class="form-control" required accept=".xlsx, .xls">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">In Kategorie importieren</label>
+                        <select name="category_id" class="form-select" required>
+                            <option value="">Kategorie auswählen...</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-info w-100">Importieren</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rechte Spalte: Übersichten -->
+    <div class="col-lg-7">
+        <!-- Globale Produktübersicht -->
+        <div class="card mb-4">
+            <div class="card-header"><h3>Globale Produktübersicht</h3></div>
+            <div class="card-body">
+                <table class="table table-sm table-striped">
+                    <thead><tr><th>Produkt</th><th>Größe</th><th>Gesamt vergeben</th></tr></thead>
+                    <tbody>
+                        {% for item in product_summary %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.groesse }}</td>
+                            <td><strong>{{ item.total_menge }}</strong></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center">Noch keine Produkte vergeben.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Nutzerübersicht -->
+        <div class="card mb-4">
+            <div class="card-header"><h3>Übersicht der Nutzerauswahlen</h3></div>
+            <div class="card-body">
+                <div class="accordion" id="userAccordion">
+                    {% for user in users %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ user.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ user.id }}">
+                                {{ user.username }} (Nr: {{ user.bekleidungsnummer }})
+                            </button>
+                        </h2>
+                        <div id="collapse{{ user.id }}" class="accordion-collapse collapse" data-bs-parent="#userAccordion">
+                            <div class="accordion-body">
+                                {% if user.auswahlen %}
+                                <ul class="list-group">
+                                    {% for auswahl in user.auswahlen %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ auswahl.product.name }} ({{ auswahl.product.groesse }})
+                                        <span class="badge bg-primary rounded-pill">{{ auswahl.menge }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <p class="text-muted">Keine Auswahl getroffen.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

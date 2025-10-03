@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h3>Registrieren</h3></div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Vor- oder Nachname (als Username)</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bekleidungsnummer" class="form-label">Bekleidungsnummer (1-3 stellig)</label>
+                        <input type="text" class="form-control" id="bekleidungsnummer" name="bekleidungsnummer" required pattern="\d{1,3}" title="Bitte eine 1- bis 3-stellige Nummer eingeben.">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Registrieren</button>
+                </form>
+            </div>
+             <div class="card-footer text-center">
+                Bereits registriert? <a href="{{ url_for('login') }}">Zum Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

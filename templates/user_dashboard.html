@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+{# Makro für die rekursive Darstellung, jetzt mit Sortierung #}
+{% macro render_user_category(category, user_mengen) %}
+<div class="accordion-item">
+    <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCat{{ category.id }}">
+            {{ category.name }}
+        </button>
+    </h2>
+    <div id="collapseCat{{ category.id }}" class="accordion-collapse collapse">
+        <div class="accordion-body">
+            <table class="table">
+                <tbody>
+                    {# Zuerst Unterkategorien #}
+                    {% for subcat in category.subcategories.order_by(Category.name) %}
+                    <tr><td colspan="3" class="p-0 border-0">
+                        {{ render_user_category(subcat, user_mengen) }}
+                    </td></tr>
+                    {% endfor %}
+                    {# Dann Produkte #}
+                    {% for product in category.products.order_by(Product.name) %}
+                    <tr class="product-row">
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.groesse }}</td>
+                        <td style="width: 100px;">
+                            <input type="number" name="menge_{{ product.id }}" class="form-control" min="0" value="{{ user_mengen.get(product.id, 0) }}">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+<h1 class="mb-4">Willkommen, {{ current_user.username }}!</h1>
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>Verfügbare Artikel</h3>
+            <input type="text" id="userProductSearch" class="form-control w-50" placeholder="Produkte suchen...">
+        </div>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('user_select') }}" method="POST">
+            <div class="accordion" id="categoryAccordion">
+                {% for category in categories %}
+                    {{ render_user_category(category, user_mengen) }}
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Auswahl speichern</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
